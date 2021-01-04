@@ -39,7 +39,7 @@ img_y.show()
 img = Image.new("L",(256,256),"white")
 for y in range(1,255):
     for x in range(1,255):
-        value = sqrt(img_x.getpixel((x,y))**2 + img_y.getpixel((x,y)))
+        value = sqrt(img_x.getpixel((x,y))**2 + img_y.getpixel((x,y))**2)
         value = int(value)
         #print(value)
         img.putpixel((x,y),value)

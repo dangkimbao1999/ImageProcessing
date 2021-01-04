@@ -110,13 +110,13 @@ def addtime(t, value, x, y):
 #(i,j) = 1 là known
 #(i,j) = 0 là neighbor
 #(i,j) = -1 là far
-img = io.imread('Liver_MRI0001/phase1/img0059.dcm')
+img = io.imread('D:/studies/word_image_generator-master/Liver_MRI0001/phase1/img0059.dcm')
 image_resized = resize(img, (8, 8),anti_aliasing=True)
 image_resized = color.rgb2gray(image_resized)
 img_smooth = scipy.ndimage.filters.gaussian_filter(img, 4)
 F = speed_func(img_smooth, 2)
-startX = 190
-startY = 160
+startX = 60
+startY = 120
 
 status = default_status(img_smooth,startX,startY)
 print('Status init')
@@ -127,6 +127,18 @@ print('T init')
 
 pq = PriorityQueue()
 
+temp = calc_t(t,startX+1,startY,F)
+pq.add((startX+1,startY),temp)
+
+temp = calc_t(t,startX,startY+1,F)
+pq.add((startX,startY+1),temp)
+
+temp = calc_t(t,startX,startY-1,F)
+pq.add((startX,startY-1),temp)
+
+temp = calc_t(t,startX-1,startY,F)
+pq.add((startX-1,startY),temp)
+
 for i in range(7000):
     #tính tất cả neighbor
     #add vo queue
@@ -134,28 +146,43 @@ for i in range(7000):
     #update vô 2 matrix
     #add neighbor mới nếu chưa là neighbor
     #lặp lại
-    for y in range(status.shape[0]):
-        for x in range(status.shape[1]):
-            if x < img.shape[0]-1 and y < img.shape[1]-1:
-                if status[y,x] == 0:
-                    temp = calc_t(t,x,y,F)
-                    pq.add((x,y),temp)
-                
-    
+    # for y in range(status.shape[0]):
+    #     for x in range(status.shape[1]):
+    #         if x < img.shape[0]-1 and y < img.shape[1]-1:
+    #             if status[y,x] == 0:
+    #                 temp = calc_t(t,x,y,F)
+    #                 pq.add((x,y),temp)
+
     obj = pq.pop()
-    m,j = obj[0]
+    x,y = obj[0]
     time = obj[1]
-    addtime(t,time,m,j)
-    n2k(status,m,j)
-    f2n(status,m,j)
+    addtime(t,time,x,y)
+    n2k(status,x,y)
+    f2n(status,x,y)
+    if(0 < x < status.shape[0] and 0 < y < status.shape[1]):
+        if status[y,x-1] == 0:
+            temp = calc_t(t, x-1, y, F)
+            pq.add((x-1, y), temp)
+
+        if status[y,x+1] == 0:
+            temp = calc_t(t,x+1, y, F)
+            pq.add((x+1, y), temp)
+
+        if status[y+1,x] == 0:
+            temp = calc_t(t, x, y+1, F) 
+            pq.add((x,y+1), temp)
+
+        if status[y-1,x] == 0:
+            temp = calc_t(t, x, y-1, F)
+            pq.add((x, y-1), temp)
     
 
-##print('Status final')
-##print(status)
-##print('T final')
-##print(t)
+#print('Status final')
+#print(status)
+#print('T final')
+#print(t)
 plt.imshow(img, cmap='Greys_r')
-plt.contour(status, 1, colors='r', linewidths=[3])
+plt.contour(status, 0, colors='r', linewidths=[3])
 plt.draw()
 plt.show()
 
