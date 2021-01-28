@@ -2,6 +2,8 @@ import argparse
 from collections import namedtuple
 import numpy as np
 from skimage.measure import points_in_poly
+import matplotlib.pyplot as plt
+
 
 
 Object = namedtuple('Object',
@@ -15,9 +17,9 @@ parser.add_argument('gt_csv', default=None, metavar='GT_CSV',
                     type=str, help="Path to the ground truch csv file")
 parser.add_argument('pred_csv', default=None, metavar='PRED_PATH',
                     type=str, help="Path to the predicted csv file")
-parser.add_argument('--fps', default='0.125,0.25,0.5,1,2,4,8', type=str,
+parser.add_argument('--fps', default='0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,2,3,4,5,6,7,8,9,10', type=str,
                     help='False positives per image to compute FROC, comma '
-                    'seperated, default "0.125,0.25,0.5,1,2,4,8"')
+                    'seperated, default "0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,2,3,4,5,6,7,8,9,10"')
 
 
 def inside_object(pred, obj):
@@ -97,6 +99,9 @@ def main():
     fps_idx = 0
     object_hitted = set()
     fps = list(map(float, args.fps.split(',')))
+    # fps1 = np.arange(0,1,0.2)
+    # fps2 = np.arange(1,10,2)
+    # fps = np.concatenate((fps1,fps2),axis=None).tolist()
     froc = []
     for i in range(len(preds)):
         is_inside = False
@@ -130,6 +135,19 @@ def main():
     print('\t'.join(map(lambda x: '{:.3f}'.format(x), froc)))
     print('FROC:')
     print(np.mean(froc))
+
+    fig, ax = plt.subplots(
+        subplot_kw=dict(xlim=[0, 10], ylim=[0, 1], aspect = 'auto'),
+        figsize=(6,6)
+    )
+
+    ax.set_title("FROC Plot")
+    plt.xlabel("False Positive Per Image")
+    plt.ylabel("Sensitivity")
+    ax.plot(fps, froc , label=f'FROC:{np.mean(froc)}', marker = '.')
+    ax.legend(loc='lower right')
+    ax.grid(linestyle='dashed')
+    plt.show()
 
 
 if __name__ == '__main__':
